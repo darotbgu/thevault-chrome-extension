@@ -1,0 +1,12 @@
+{
+  "name": "The Vault Extension",
+  "version": "1.0",
+  "description": "Passwords keeper",
+  "manifest_version": 2,
+  "browser_action": {
+    "default_icon":{
+      "32": "assets/icons/vault.png"
+    },
+    "default_popup": "index.html"
+  }
+}
