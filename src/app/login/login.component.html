@@ -1,0 +1,16 @@
+<h2>Login</h2>
+<form [formGroup]="loginForm" (submit)="onSubmit()">
+  <div class="input-fields">
+     <span class="ui-float-label">
+        <input id="float-input" type="text" size="30" pInputText formControlName="username">
+        <label for="float-input">Username</label>
+    </span>
+  </div>
+  <div class="input-fields">
+    <input pPassword  formControlName="password" type="password"/>
+  </div>
+  <div class="group-buttons">
+    <button pButton type="button" label="Login"></button>
+    <a routerLink="/register" class="btn btn-link">Register</a>
+  </div>
+</form>
