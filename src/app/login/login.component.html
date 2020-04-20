@@ -10,7 +10,7 @@
     <input pPassword  formControlName="password" type="password"/>
   </div>
   <div class="group-buttons">
-    <button pButton type="button" label="Login"></button>
+    <button [disabled]="loading" pButton type="submit" label="Login"></button>
     <a routerLink="/register" class="btn btn-link">Register</a>
   </div>
 </form>

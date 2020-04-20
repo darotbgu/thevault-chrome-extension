@@ -7,6 +7,15 @@
     "default_icon":{
       "32": "assets/icons/vault.png"
     },
+    "permissions": [
+      "activeTab"
+    ],
+    "background": {
+      "scripts": [
+        "background.js",
+        "runtime.js"
+      ]
+    },
     "default_popup": "index.html"
   }
 }

@@ -1,9 +1,11 @@
 :host{
   background-color: #919191;
-  display: block;
+  color: white;
+  display: flow-root;
 }
 .container{
   background-color: white;
+  color: black;
   display: flex;
   flex-grow: 1;
   align-items: center;
