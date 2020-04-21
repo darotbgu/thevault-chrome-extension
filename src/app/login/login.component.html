@@ -2,15 +2,18 @@
 <form [formGroup]="loginForm" (submit)="onSubmit()">
   <div class="input-fields">
      <span class="ui-float-label">
-        <input id="float-input" type="text" pInputText formControlName="username">
-        <label for="float-input">Username</label>
+        <input id="float-input-user" type="text" pInputText formControlName="username">
+        <label for="float-input-user">Username</label>
     </span>
   </div>
   <div class="input-fields">
-    <input pPassword [feedback]=false formControlName="password" type="password"/>
+      <span class="ui-float-label">
+        <input id="float-input-pass" pPassword [feedback]=false formControlName="password" type="password"/>
+        <label for="float-input-pass">Password</label>
+      </span>
   </div>
   <div class="group-buttons">
-    <button [disabled]="loading" pButton type="submit" label="Login"></button>
+    <button [disabled]="loading || loginForm.invalid" pButton type="submit" label="Login"></button>
     <a routerLink="/register" class="btn btn-link">Register</a>
   </div>
 </form>

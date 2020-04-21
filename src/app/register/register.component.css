@@ -9,3 +9,7 @@ form{
   justify-content: center;
   display: block;
 }
+
+.alert-danger{
+  color: red;
+}
