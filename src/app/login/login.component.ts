@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import {Form, FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
+import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {AuthenticationService} from '../services/authentication.service';
 import {MessageService} from 'primeng/api';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -13,15 +14,18 @@ export class LoginComponent implements OnInit {
   submitted = false;
   loading = false;
 
-  constructor(private formBuilder: FormBuilder,
+  constructor(private router: Router,
+              private formBuilder: FormBuilder,
               private authenticationService: AuthenticationService,
               private messageService: MessageService) {
     this.loginForm = this.formBuilder.group({
       username: ['', Validators.required],
       password: ['', Validators.required]
     });
+    if (localStorage.getItem(this.authenticationService.userKey)){
+      this.router.navigate(['/']);
+    }
 
-    // TODO: redirect to home if user already logged in
   }
 
   ngOnInit(): void {
@@ -40,9 +44,8 @@ export class LoginComponent implements OnInit {
     const password = this.loginForm.controls.password.value;
     this.authenticationService.login(username, password).subscribe(
       data => {
-          console.log(data.msg);
-       // this.messageService.add({severity: 'success', summary: 'Login Message', detail: data.msg});
-    },
+          this.router.navigate(['/']);
+        },
         error => {
       this.loading = false;
       });

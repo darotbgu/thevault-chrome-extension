@@ -18,7 +18,11 @@ button{
   cursor: pointer;
   border-radius: 3px;
 }
-
+.input-fields{
+  margin-bottom: 10px;
+}
 form{
   align-items: center;
+  justify-content: center;
+  display: block;
 }

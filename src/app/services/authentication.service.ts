@@ -4,6 +4,8 @@ import {Observable} from 'rxjs';
 import {catchError, tap} from 'rxjs/operators';
 import {MessageService} from 'primeng/api';
 import { environment } from '../../environments/environment';
+import {ResponseData} from '../modles/responseData';
+import {User} from '../modles/user';
 
 
 @Injectable({
@@ -11,11 +13,11 @@ import { environment } from '../../environments/environment';
 })
 export class AuthenticationService {
   usersUrl = `${environment.baseUrl}/users`;
-  tokenKey = 'auth_token';
+  userKey = 'user';
 
   constructor(private httpClient: HttpClient, private messageService: MessageService) { }
 
-  public register(user: string, pass: string, firstName: string, lastName: string): Observable<any>{
+  public register(firstName: string, lastName: string, user: string, pass: string): Observable<any>{
     const url =  `${this.usersUrl}/register/`;
     const data = {
       username: user,
@@ -26,23 +28,31 @@ export class AuthenticationService {
     return this.httpClient.post(url, data);
   }
 
-  public login(user: string, pass: string): Observable<any>{
+  public login(user: string, pass: string): Observable<ResponseData>{
     const url = `${this.usersUrl}/login/`;
     const data = {username: user, password: pass};
-    return this.httpClient.post(url, data)
+    return this.httpClient.post<ResponseData>(url, data)
       .pipe(tap((res) => {
-        localStorage.setItem(this.tokenKey, res.auth_token);
+        localStorage.setItem(this.userKey, JSON.stringify(res.data));
       }));
   }
 
   public logout(): Observable<any>{
      const url = `${this.usersUrl}/logout/`;
      return this.httpClient.get(url).pipe(tap((res) => {
-       localStorage.removeItem(this.tokenKey);
+       localStorage.removeItem(this.userKey);
      }));
   }
 
+  public getToken(): string {
+    const userData = localStorage.getItem(this.userKey);
+    if (!userData){
+      return null;
+    }
+    const user: User = JSON.parse(userData);
+    return user.authToken;
+  }
   // public handleError(err){
-  //   this.messageService.add({severity:'error', summary:'Error Message', detail:str(err)})
+  //   this.messageService.add({severity: 'error', summary: 'Error Message', detail: err.message});
   // }
 }

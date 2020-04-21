@@ -1,1 +1,29 @@
-<p>register works!</p>
+<h2>Register</h2>
+<form [formGroup]="registerForm" (submit)="onSubmit()">
+  <div class="input-fields">
+     <span class="ui-float-label">
+        <input id="float-input-firstname" type="text" pInputText formControlName="firstName">
+        <label for="float-input-firstname">First Name</label>
+    </span>
+  </div>
+  <div class="input-fields">
+     <span class="ui-float-label">
+        <input id="float-input-lastname" type="text" pInputText formControlName="lastName">
+        <label for="float-input-lastname">Last Name</label>
+    </span>
+  </div>
+
+  <div class="input-fields">
+     <span class="ui-float-label">
+        <input id="float-input-username" type="text" pInputText formControlName="username">
+        <label for="float-input-username">Username</label>
+    </span>
+  </div>
+  <div class="input-fields">
+    <input pPassword  formControlName="password" type="password"/>
+  </div>
+  <div class="group-buttons">
+    <button [disabled]="loading" pButton type="submit" label="Register"></button>
+  </div>
+</form>
+
