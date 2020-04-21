@@ -1,4 +1,4 @@
-<h2>Login</h2>
+<!--<h2>Login</h2>-->
 <form [formGroup]="loginForm" (submit)="onSubmit()">
   <div class="input-fields">
      <span class="ui-float-label">
@@ -7,7 +7,7 @@
     </span>
   </div>
   <div class="input-fields">
-    <input pPassword  formControlName="password" type="password"/>
+    <input pPassword [feedback]=false formControlName="password" type="password"/>
   </div>
   <div class="group-buttons">
     <button [disabled]="loading" pButton type="submit" label="Login"></button>

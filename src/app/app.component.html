@@ -1,7 +1,11 @@
-<p-toast position="top-center"></p-toast>
+<p-toast position="top-center" key="message"></p-toast>
+
 <h1>The Vault</h1>
 <div class="container">
   <p-card [style]="{width: '250px', 'background-color': 'white'}" styleClass="ui-card-shadow">
+    <p-header class="card-header">
+      <app-header></app-header>
+    </p-header>
     <router-outlet></router-outlet>
   </p-card>
 </div>

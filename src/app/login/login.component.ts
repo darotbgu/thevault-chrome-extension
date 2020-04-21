@@ -3,6 +3,7 @@ import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {AuthenticationService} from '../services/authentication.service';
 import {MessageService} from 'primeng/api';
 import {Router} from '@angular/router';
+import {HeaderService} from '../services/header.service';
 
 @Component({
   selector: 'app-login',
@@ -17,6 +18,7 @@ export class LoginComponent implements OnInit {
   constructor(private router: Router,
               private formBuilder: FormBuilder,
               private authenticationService: AuthenticationService,
+              private headerService: HeaderService,
               private messageService: MessageService) {
     this.loginForm = this.formBuilder.group({
       username: ['', Validators.required],
@@ -29,6 +31,7 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.headerService.setHeader('Login');
     this.submitted = false;
     this.loading = false;
   }

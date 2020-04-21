@@ -1,4 +1,3 @@
-<h2>Register</h2>
 <form [formGroup]="registerForm" (submit)="onSubmit()">
   <div class="input-fields">
      <span class="ui-float-label">
@@ -24,6 +23,7 @@
   </div>
   <div class="group-buttons">
     <button [disabled]="loading" pButton type="submit" label="Register"></button>
+    <a routerLink="/login" class="btn btn-link">Login</a>
   </div>
 </form>
 

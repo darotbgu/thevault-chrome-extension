@@ -3,6 +3,7 @@ import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {Router} from '@angular/router';
 import {AuthenticationService} from '../services/authentication.service';
 import {MessageService} from 'primeng/api';
+import {HeaderService} from '../services/header.service';
 
 @Component({
   selector: 'app-register',
@@ -17,6 +18,7 @@ export class RegisterComponent implements OnInit {
   constructor(private router: Router,
               private formBuilder: FormBuilder,
               private authenticationService: AuthenticationService,
+              private headerService: HeaderService,
               private messageService: MessageService) {
     this.registerForm = this.formBuilder.group({
       firstName: ['', Validators.required],
@@ -27,6 +29,7 @@ export class RegisterComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.headerService.setHeader('Register');
     this.submitted = false;
     this.loading = false;
   }
