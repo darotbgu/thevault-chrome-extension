@@ -3,7 +3,7 @@ import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {tap} from 'rxjs/operators';
 import { environment } from '../../environments/environment';
-import {ResponseData} from '../modles/responseData';
+import {ResponseData} from '../modles/response-data';
 import {User} from '../modles/user';
 import {EncryptionService} from './encryption.service';
 
