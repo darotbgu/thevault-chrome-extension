@@ -9,4 +9,7 @@
     <router-outlet></router-outlet>
   </p-card>
 </div>
+<p-blockUI [blocked]="showSpinner | async">
+  <p-progressSpinner class="loading"></p-progressSpinner>
+</p-blockUI>
 

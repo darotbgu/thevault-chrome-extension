@@ -13,11 +13,15 @@ import {ReactiveFormsModule} from '@angular/forms';
 import {CardModule} from 'primeng/card';
 import {PasswordModule} from 'primeng/password';
 import {MessageService} from 'primeng/api';
+import {BlockUIModule} from 'primeng/blockui';
+import {ProgressSpinnerModule} from 'primeng/progressspinner';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HomeComponent } from './home/home.component';
 import {TokenInterceptor} from './interceptors/token.interceptor';
 import {HttpErrorInterceptor} from './interceptors/http-error.interceptor';
 import { HeaderComponent } from './components/header/header.component';
+import {LoaderInterceptor} from './interceptors/loader.interceptor.service';
+import {LoaderService} from './services/loader.service';
 
 @NgModule({
   declarations: [
@@ -37,20 +41,16 @@ import { HeaderComponent } from './components/header/header.component';
     CardModule,
     BrowserAnimationsModule,
     ReactiveFormsModule,
-    PasswordModule
+    PasswordModule,
+    BlockUIModule,
+    ProgressSpinnerModule
   ],
   providers: [
     MessageService,
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: TokenInterceptor,
-      multi: true
-    },
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: HttpErrorInterceptor,
-      multi: true
-    }
+    LoaderService,
+    { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: HttpErrorInterceptor, multi: true},
+    { provide: HTTP_INTERCEPTORS, useClass: LoaderInterceptor, multi: true }
   ],
   bootstrap: [AppComponent]
 })
