@@ -36,10 +36,12 @@ export class HomeComponent implements OnInit {
 
   onConfirm() {
     this.messageService.clear('confirm');
-    this.authenticationService.logout().subscribe(value => {
+    this.authenticationService.logout().subscribe(
+      data => {
       this.router.navigate(['/login']);
       this.loading = false;
-    });
+    },
+      error => {this.loading = false; });
   }
 
   onReject() {

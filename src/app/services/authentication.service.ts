@@ -5,6 +5,7 @@ import {tap} from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import {ResponseData} from '../modles/responseData';
 import {User} from '../modles/user';
+import {EncryptionService} from './encryption.service';
 
 
 @Injectable({
@@ -14,10 +15,11 @@ export class AuthenticationService {
   usersUrl = `${environment.baseUrl}/users`;
   userKey = 'user';
 
-  constructor(private httpClient: HttpClient) { }
+  constructor(private httpClient: HttpClient, private encryptionService: EncryptionService) { }
 
-  public register(firstName: string, lastName: string, user: string, pass: string): Observable<any>{
+  public register(firstName: string, lastName: string, user: string, masterKey: string): Observable<any>{
     const url =  `${this.usersUrl}/register/`;
+    const pass = this.deriveKeysAndGetServerPassword(masterKey);
     const data = {
       username: user,
       password: pass,
@@ -27,8 +29,9 @@ export class AuthenticationService {
     return this.httpClient.post(url, data);
   }
 
-  public login(user: string, pass: string): Observable<ResponseData<User>>{
+  public login(user: string, masterKey: string): Observable<ResponseData<User>>{
     const url = `${this.usersUrl}/login/`;
+    const pass = this.deriveKeysAndGetServerPassword(masterKey);
     const data = {username: user, password: pass};
     return this.httpClient.post<ResponseData<User>>(url, data)
       .pipe(tap((res) => {
@@ -39,6 +42,7 @@ export class AuthenticationService {
   public logout(): Observable<any>{
      const url = `${this.usersUrl}/logout/`;
      return this.httpClient.get(url).pipe(tap((res) => {
+       this.encryptionService.clearKeys();
        localStorage.removeItem(this.userKey);
      }));
   }
@@ -50,5 +54,10 @@ export class AuthenticationService {
     }
     const user: User = JSON.parse(userData);
     return user.authToken;
+  }
+
+  private deriveKeysAndGetServerPassword(masterKey: string){
+    this.encryptionService.deriveKeys(masterKey);
+    return this.encryptionService.getServerPassword();
   }
 }

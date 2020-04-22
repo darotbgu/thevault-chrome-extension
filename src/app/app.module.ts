@@ -22,6 +22,7 @@ import {HttpErrorInterceptor} from './interceptors/http-error.interceptor';
 import { HeaderComponent } from './components/header/header.component';
 import {LoaderInterceptor} from './interceptors/loader.interceptor.service';
 import {LoaderService} from './services/loader.service';
+import {EncryptionService} from './services/encryption.service';
 
 @NgModule({
   declarations: [
@@ -48,6 +49,7 @@ import {LoaderService} from './services/loader.service';
   providers: [
     MessageService,
     LoaderService,
+    EncryptionService,
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: HttpErrorInterceptor, multi: true},
     { provide: HTTP_INTERCEPTORS, useClass: LoaderInterceptor, multi: true }

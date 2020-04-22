@@ -51,6 +51,7 @@ export class LoginComponent implements OnInit {
             this.messageService.add({key: 'message', severity: 'error', summary: 'Error Message', detail: data.msg});
             this.submitted = false;
           }
-        });
+        },
+      error => {this.submitted = false; });
   }
 }
