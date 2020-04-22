@@ -13,7 +13,6 @@ import {HeaderService} from '../services/header.service';
 export class RegisterComponent implements OnInit {
   registerForm: FormGroup;
   submitted = false;
-  loading = false;
 
   constructor(private router: Router,
               private formBuilder: FormBuilder,
@@ -31,26 +30,27 @@ export class RegisterComponent implements OnInit {
   ngOnInit(): void {
     this.headerService.setHeader('Register');
     this.submitted = false;
-    this.loading = false;
   }
 
   onSubmit(): void{
-    // todo: need submitted??
     this.submitted = true;
     if (this.registerForm.invalid){
       return;
     }
-    this.loading = true;
     const firstName = this.registerForm.controls.firstName.value;
     const lastName = this.registerForm.controls.lastName.value;
     const username = this.registerForm.controls.username.value;
     const password = this.registerForm.controls.password.value;
     this.authenticationService.register(firstName, lastName, username, password).subscribe(
       data => {
-        this.router.navigate(['/login']);
-      },
-      error => {
-        this.loading = false;
+        if (data.success){
+          this.router.navigate(['/login']);
+          this.submitted = false;
+        }
+        else{
+         this.messageService.add({key: 'message', severity: 'error', summary: 'Error Message', detail: data.msg});
+         this.submitted = false;
+        }
       });
   }
 }

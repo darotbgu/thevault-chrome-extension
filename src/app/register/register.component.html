@@ -32,7 +32,7 @@
     </div>
   </div>
   <div class="group-buttons">
-    <button [disabled]="loading || registerForm.invalid" pButton type="submit" label="Register"></button>
+    <button [disabled]="submitted || registerForm.invalid" pButton type="submit" label="Register"></button>
     <a routerLink="/login" class="btn btn-link">Login</a>
   </div>
 </form>

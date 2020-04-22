@@ -13,7 +13,6 @@ import {HeaderService} from '../services/header.service';
 export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   submitted = false;
-  loading = false;
 
   constructor(private router: Router,
               private formBuilder: FormBuilder,
@@ -33,25 +32,25 @@ export class LoginComponent implements OnInit {
   ngOnInit(): void {
     this.headerService.setHeader('Login');
     this.submitted = false;
-    this.loading = false;
   }
 
   onSubmit(): void{
-    // todo: need submitted??
     this.submitted = true;
     if (this.loginForm.invalid){
       return;
     }
-    this.loading = true;
     const username = this.loginForm.controls.username.value;
     const password = this.loginForm.controls.password.value;
     this.authenticationService.login(username, password).subscribe(
       data => {
-          this.router.navigate(['/']);
-        },
-        error => {
-      this.loading = false;
-      });
+          if (data.success){
+            this.router.navigate(['/']);
+            this.submitted = false;
+          }
+          else{
+            this.messageService.add({key: 'message', severity: 'error', summary: 'Error Message', detail: data.msg});
+            this.submitted = false;
+          }
+        });
   }
-
 }

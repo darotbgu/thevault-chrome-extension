@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
-import {catchError, tap} from 'rxjs/operators';
-import {MessageService} from 'primeng/api';
+import {tap} from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import {ResponseData} from '../modles/responseData';
 import {User} from '../modles/user';
@@ -15,7 +14,7 @@ export class AuthenticationService {
   usersUrl = `${environment.baseUrl}/users`;
   userKey = 'user';
 
-  constructor(private httpClient: HttpClient, private messageService: MessageService) { }
+  constructor(private httpClient: HttpClient) { }
 
   public register(firstName: string, lastName: string, user: string, pass: string): Observable<any>{
     const url =  `${this.usersUrl}/register/`;
@@ -28,10 +27,10 @@ export class AuthenticationService {
     return this.httpClient.post(url, data);
   }
 
-  public login(user: string, pass: string): Observable<ResponseData>{
+  public login(user: string, pass: string): Observable<ResponseData<User>>{
     const url = `${this.usersUrl}/login/`;
     const data = {username: user, password: pass};
-    return this.httpClient.post<ResponseData>(url, data)
+    return this.httpClient.post<ResponseData<User>>(url, data)
       .pipe(tap((res) => {
         localStorage.setItem(this.userKey, JSON.stringify(res.data));
       }));
@@ -52,7 +51,4 @@ export class AuthenticationService {
     const user: User = JSON.parse(userData);
     return user.authToken;
   }
-  // public handleError(err){
-  //   this.messageService.add({severity: 'error', summary: 'Error Message', detail: err.message});
-  // }
 }

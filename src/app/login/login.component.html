@@ -13,7 +13,7 @@
       </span>
   </div>
   <div class="group-buttons">
-    <button [disabled]="loading || loginForm.invalid" pButton type="submit" label="Login"></button>
+    <button [disabled]="submitted || loginForm.invalid" pButton type="submit" label="Login"></button>
     <a routerLink="/register" class="btn btn-link">Register</a>
   </div>
 </form>
