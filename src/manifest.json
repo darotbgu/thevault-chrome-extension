@@ -1,21 +1,27 @@
 {
   "name": "The Vault Extension",
   "version": "1.0",
-  "description": "Passwords keeper",
+  "description": "Passwords Keeper",
   "manifest_version": 2,
-  "browser_action": {
-    "default_icon":{
-      "32": "assets/icons/vault.png"
-    },
-    "permissions": [
-      "activeTab"
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "input",
+    "*://*/*", "http://*/*", "https://*/*"
+  ],
+  "background": {
+    "scripts": [
+      "background.js",
+      "runtime.js"
     ],
-    "background": {
-      "scripts": [
-        "background.js",
-        "runtime.js"
-      ]
-    },
-    "default_popup": "index.html"
+    "persistent": false
+  },
+  "browser_action": {
+    "default_popup": "index.html",
+        "default_icon": {
+          "32": "assets/icons/vault.png"
+        }
+
   }
+
 }
