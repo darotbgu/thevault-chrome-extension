@@ -1,4 +1,4 @@
-interface AuthData {
+export interface AuthData {
   siteId: number;
   siteName: string;
   username: string;

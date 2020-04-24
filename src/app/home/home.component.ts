@@ -4,6 +4,10 @@ import {Router} from '@angular/router';
 import {User} from '../modles/user';
 import {HeaderService} from '../services/header.service';
 import {MessageService} from 'primeng/api';
+import {AuthDataService} from '../services/auth-data.service';
+import {AuthData} from '../modles/auth-data';
+import {EncryptionService} from '../services/encryption.service';
+import {EncryptionKey} from '../modles/encryption-key';
 
 @Component({
   selector: 'app-home',
@@ -12,46 +16,49 @@ import {MessageService} from 'primeng/api';
 })
 export class HomeComponent implements OnInit {
   loading = false;
-  private readonly formListenerCode =
-    `
-    for (var i = 0; i < document.forms.length; i++) {
-        document.forms[i].addEventListener("submit", function(){
-            var form = this;
-            var password = "";
-            var username = "";
-            var inputs = form.getElementsByTagName("input");
-            for (var j = 0; j < inputs.length; j++){
-              var input = inputs[j];
-              if (input.type == "password"){
-                password = input.value;
-              }
-              else if (input.type == "text"){
-                username = input.value
-              }
-            }
-            var data = [username, password];
-            chrome.runtime.sendMessage(message={'name':'form_submit', 'data':data});
-        });
-    }
-    `;
-
+  userAuthData: AuthData[];
+  user: User;
+  encKeys;
 
   constructor(private authenticationService: AuthenticationService,
               private router: Router,
               private headerService: HeaderService,
-              private messageService: MessageService) { }
+              private messageService: MessageService,
+              private authDataService: AuthDataService,
+              private encryptionService: EncryptionService) {
 
-  ngOnInit(): void {
     this.loading = false;
     const userData = localStorage.getItem(this.authenticationService.userKey);
     if (!userData){
       this.router.navigate(['/login']);
     }
-    const user: User = JSON.parse(userData);
-    this.headerService.setHeader(`Welcome ${user.firstName} ${user.lastName}!`);
+    this.user = JSON.parse(userData);
+    this.headerService.setHeader(`Welcome ${this.user.firstName} ${this.user.lastName}!`);
+    this.encKeys = this.encryptionService.getKeys();
+    this.authDataService.getAuthsData().subscribe(res => {
+      if (res.success) {
+        this.decryptAuthsData(res.data);
+        this.userAuthData = res.data;
+        const message = {name: 'user-data', user: this.user, authData: this.userAuthData, encKeys: this.encKeys};
+        chrome.runtime.sendMessage(message);
+        console.log('sentMessage');
+      }
+      else {
+        this.messageService.add({key: 'message', severity: 'error', summary: 'Error Message', detail: res.msg});
+      }
+    });
 
-    this.injectFormSubmitListener();
+  }
 
+  ngOnInit(): void {
+    // chrome.runtime.onMessage.addListener((message, sender) => {
+    //   console.log('got message');
+    //   if (message.name === 'new-auth-data'){
+    //     const data = message.data;
+    //     this.authDataService.storeAuthData(data.site, data.username, data.password).subscribe();
+    //     console.log('stored');
+    //   }
+    // });
   }
 
   public logout(event){
@@ -64,6 +71,7 @@ export class HomeComponent implements OnInit {
     this.messageService.clear('confirm');
     this.authenticationService.logout().subscribe(
       data => {
+        // todo: clear extension data
       this.router.navigate(['/login']);
       this.loading = false;
     },
@@ -75,28 +83,11 @@ export class HomeComponent implements OnInit {
     this.loading = false;
   }
 
-  private injectFormSubmitListener(){
-    chrome.runtime.onStartup.addListener(() => {
-      this.inject();
-    });
-    chrome.tabs.onReplaced.addListener(() => {
-      this.inject();
-    });
-    chrome.tabs.onActivated.addListener(() => {
-      this.inject();
-    });
-  }
 
-  private inject(){
-    chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-      tabs.forEach(tab => {
-        const tabUrl = tab.url;
-        console.log('message');
-        chrome.tabs.executeScript(tab.id, {code: this.formListenerCode}, () => {
-          console.log(tabUrl);
-        });
-        console.log('injected');
-      });
+  private decryptAuthsData(data: AuthData[]){
+    data.forEach(authData => {
+      authData.username = this.encryptionService.decryptMessage(authData.username);
+      authData.password = this.encryptionService.decryptMessage(authData.password);
     });
   }
 }

@@ -5,7 +5,7 @@ import hmacSHA256 from 'crypto-js/hmac-sha256';
 import aes from 'crypto-js/aes';
 import Base64 from 'crypto-js/enc-base64';
 import Utf8 from 'crypto-js/enc-Utf8';
-import {throwError} from 'rxjs';
+import {hmac} from '../../utils/enc-utils';
 
 interface EncryptionKeys {
   serverPassword: EncryptionKey;
@@ -43,7 +43,7 @@ export class EncryptionService {
     return bytes.toString(Utf8);
   }
 
-  private getKeys(){
+  public getKeys(){
     const encryptedKeys = localStorage.getItem(this.localStorageKey);
     const decryptedText = EncryptionService.aesDecrypt(encryptedKeys, this.localStorageEncKey);
     return JSON.parse(decryptedText);
