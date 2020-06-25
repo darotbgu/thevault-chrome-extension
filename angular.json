@@ -11,11 +11,8 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-builders/custom-webpack:browser",
+          "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "customWebpackConfig": {
-              "path": "./custom-webpack.config.js"
-            },
             "outputPath": "dist/thevault-chrome-extension",
             "index": "src/index.html",
             "main": "src/main.ts",
@@ -25,7 +22,9 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
-              "src/manifest.json"
+              "src/manifest.json",
+              "src/content.js",
+              "src/background.js"
             ],
             "styles": [
               "src/styles.css",
@@ -36,11 +35,6 @@
             "scripts": []
           },
           "configurations": {
-            "dev": {
-              "customWebpackConfig": {
-                "path": "./custom-webpack-dev.config.js"
-              }
-            },
             "production": {
               "fileReplacements": [
                 {

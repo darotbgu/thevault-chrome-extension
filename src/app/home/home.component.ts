@@ -37,8 +37,11 @@ export class HomeComponent implements OnInit {
     this.encKeys = this.encryptionService.getKeys();
     this.authDataService.getAuthsData().subscribe(res => {
       if (res.success) {
-        this.decryptAuthsData(res.data);
+        // console.log('trying to decrept');
+        // this.decryptAuthsData(res.data);
+        // console.log('after decrept');
         this.userAuthData = res.data;
+        localStorage.setItem('authData', JSON.stringify(this.userAuthData));
         const message = {name: 'user-data', user: this.user, authData: this.userAuthData, encKeys: this.encKeys};
         chrome.runtime.sendMessage(message);
         console.log('sentMessage');
