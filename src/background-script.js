@@ -2,15 +2,10 @@ const axios = require("axios");
 const encUtils = require("./enc-utils");
 
 
+
 const instance = axios.create({
   baseURL: 'http://127.0.0.1:8000/',
 });
-if (localStorage.user){
-  const userData = JSON.parse(localStorage.user);
-  const authToken = userData.authToken;
-  instance.defaults.headers.common.Authorization = `Token ${authToken}`;
-}
-
 
 function getAuthDataFromServer(){
   instance.get('authentications/')
@@ -25,12 +20,17 @@ function getAuthDataFromServer(){
     .catch((err)=> alert(err));
 }
 
-getAuthDataFromServer();
+if (localStorage.user){
+  const userData = JSON.parse(localStorage.user);
+  const authToken = userData.authToken;
+  instance.defaults.headers.common.Authorization = `Token ${authToken}`;
+  getAuthDataFromServer();
+}
 
 function getExistingAuthData(domain){
   let authData = JSON.parse(localStorage.authData);
   for (let i = 0; i < authData.length; i++){
-    if (authData[i].site_name == domain){
+    if (authData[i].site_name === domain){
         authData[i].username = encUtils.decryptMessage(authData[i].username);
         authData[i].password = encUtils.decryptMessage(authData[i].password)
       return authData[i];
@@ -59,7 +59,7 @@ function storeData(data) {
     password: encUtils.encryptMessage(data.password)
   };
   const existingData = getExistingAuthData(data.site);
-  if (existingData && (existingData.username != data.username || existingData.password != data.password)){
+  if (existingData && (existingData.username !== data.username || existingData.password !== data.password)){
     updateData(authData, existingData);
   }
   else if(!existingData) {
@@ -84,6 +84,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       console.log(message.data);
       const authData = {site: senderUrl, username: data[0], password: data[1]};
       storeData(authData);
+      sendResponse(true);
       break;
     case 'form_focus':
       const existingData = getExistingAuthData(message.domain);

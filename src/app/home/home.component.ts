@@ -37,9 +37,7 @@ export class HomeComponent implements OnInit {
     this.encKeys = this.encryptionService.getKeys();
     this.authDataService.getAuthsData().subscribe(res => {
       if (res.success) {
-        // console.log('trying to decrept');
-        // this.decryptAuthsData(res.data);
-        // console.log('after decrept');
+        this.tryDecryptAuthsData(res.data);
         this.userAuthData = res.data;
         localStorage.setItem('authData', JSON.stringify(this.userAuthData));
         const message = {name: 'user-data', user: this.user, authData: this.userAuthData, encKeys: this.encKeys};
@@ -53,16 +51,7 @@ export class HomeComponent implements OnInit {
 
   }
 
-  ngOnInit(): void {
-    // chrome.runtime.onMessage.addListener((message, sender) => {
-    //   console.log('got message');
-    //   if (message.name === 'new-auth-data'){
-    //     const data = message.data;
-    //     this.authDataService.storeAuthData(data.site, data.username, data.password).subscribe();
-    //     console.log('stored');
-    //   }
-    // });
-  }
+  ngOnInit(): void {}
 
   public logout(event){
     this.loading = true;
@@ -87,10 +76,15 @@ export class HomeComponent implements OnInit {
   }
 
 
-  private decryptAuthsData(data: AuthData[]){
+  private tryDecryptAuthsData(data: AuthData[]){
     data.forEach(authData => {
-      authData.username = this.encryptionService.decryptMessage(authData.username);
-      authData.password = this.encryptionService.decryptMessage(authData.password);
+      try {
+        this.encryptionService.decryptMessage(authData.username);
+        this.encryptionService.decryptMessage(authData.password);
+      }
+      catch (e) {
+        this.messageService.add({key: 'message', severity: 'error', summary: 'Corrupted Data', detail: e.message});
+      }
     });
   }
 }

@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "browserify src/background-script.js -o src/background.js | browserify src/content-script.js -o src/content.js | ng build",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
@@ -23,8 +23,10 @@
     "@babel/core": "^7.9.0",
     "@babel/preset-env": "^7.9.5",
     "@types/chrome": "0.0.104",
+    "autocomplete.js": "^0.37.1",
     "babel-loader": "^8.1.0",
     "crypto-js": "^4.0.0",
+    "jquery": "^3.5.1",
     "primeicons": "^2.0.0",
     "primeng": "^9.0.5",
     "rxjs": "~6.5.4",
