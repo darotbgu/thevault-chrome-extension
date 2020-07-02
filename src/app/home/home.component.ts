@@ -7,7 +7,6 @@ import {MessageService} from 'primeng/api';
 import {AuthDataService} from '../services/auth-data.service';
 import {AuthData} from '../modles/auth-data';
 import {EncryptionService} from '../services/encryption.service';
-import {EncryptionKey} from '../modles/encryption-key';
 
 @Component({
   selector: 'app-home',
@@ -37,10 +36,10 @@ export class HomeComponent implements OnInit {
     this.encKeys = this.encryptionService.getKeys();
     this.authDataService.getAuthsData().subscribe(res => {
       if (res.success) {
-        this.tryDecryptAuthsData(res.data);
+        this.tryDecryptAuthData(res.data);
         this.userAuthData = res.data;
-        localStorage.setItem('authData', JSON.stringify(this.userAuthData));
-        const message = {name: 'user-data', user: this.user, authData: this.userAuthData, encKeys: this.encKeys};
+        localStorage.setItem('artifacts', JSON.stringify(this.userAuthData));
+        const message = {name: 'user-data', user: this.user, artifacts: this.userAuthData, encKeys: this.encKeys};
         chrome.runtime.sendMessage(message);
         console.log('sentMessage');
       }
@@ -76,11 +75,13 @@ export class HomeComponent implements OnInit {
   }
 
 
-  private tryDecryptAuthsData(data: AuthData[]){
+  private tryDecryptAuthData(data: AuthData[]){
     data.forEach(authData => {
       try {
-        this.encryptionService.decryptMessage(authData.username);
-        this.encryptionService.decryptMessage(authData.password);
+        this.encryptionService.decryptMessage(authData.force);
+        this.encryptionService.decryptMessage(authData.crystal);
+        this.encryptionService.decryptMessage(authData.jedi);
+        this.encryptionService.decryptMessage(authData.sith);
       }
       catch (e) {
         this.messageService.add({key: 'message', severity: 'error', summary: 'Corrupted Data', detail: e.message});

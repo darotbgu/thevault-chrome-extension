@@ -14,6 +14,7 @@ import {EncryptionService} from './encryption.service';
 export class AuthenticationService {
   usersUrl = `${environment.baseUrl}/users`;
   userKey = 'user';
+  authDataKey = 'artifacts';
 
   constructor(private httpClient: HttpClient, private encryptionService: EncryptionService) { }
 
@@ -44,6 +45,7 @@ export class AuthenticationService {
      return this.httpClient.get(url).pipe(tap((res) => {
        this.encryptionService.clearKeys();
        localStorage.removeItem(this.userKey);
+       localStorage.removeItem(this.authDataKey);
      }));
   }
 

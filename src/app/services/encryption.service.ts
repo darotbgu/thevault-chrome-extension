@@ -26,7 +26,7 @@ export class EncryptionService {
   }
   private readonly localStorageKey = 'keys';
   private readonly localStorageEncKey = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
-  private readonly cipherLength = 44;
+  private readonly tokenLength = 44;
   private encryptionKeys: EncryptionKeys;
 
   private static hmac(ciphertext, key){
@@ -54,7 +54,6 @@ export class EncryptionService {
   }
 
   private stringForKey = (message: string, num: number) => `${message}${num}`;
-  private encryptedMessage = (ciphertext, authToken) => `${ciphertext}${authToken}`;
 
   deriveKeys(masterKey: string) {
     this.deriveKey(this.encryptionKeys.serverPassword, masterKey);
@@ -75,17 +74,10 @@ export class EncryptionService {
     return this.encryptionKeys.serverPassword.key;
   }
 
-  encryptMessage(message: string): string{
-    this.encryptionKeys = this.getKeys();
-    const ciphertext = EncryptionService.aesEncrypt(message, this.encryptionKeys.encryptionKey.key);
-    const token = EncryptionService.hmac(ciphertext, this.encryptionKeys.authenticationKey.key);
-    return this.encryptedMessage(ciphertext, token);
-  }
-
   decryptMessage(message: string): string{
     this.encryptionKeys = this.getKeys();
-    const ciphertext = message.slice(0, this.cipherLength);
-    const token = message.slice(this.cipherLength);
+    const ciphertext = message.slice(0, message.length - this.tokenLength);
+    const token = message.slice(message.length - this.tokenLength);
     if (EncryptionService.hmac(ciphertext, this.encryptionKeys.authenticationKey.key) !== token){
       throw new Error('Data has changed');
     }

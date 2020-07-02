@@ -33782,10 +33782,10 @@ const instance = axios.create({
 });
 
 function getAuthDataFromServer(){
-  instance.get('authentications/')
+  instance.get('artifacts/')
     .then((res) => {
       if (res.data.success) {
-        localStorage.authData =  JSON.stringify(res.data.data);
+        localStorage.artifacts =  JSON.stringify(res.data.data);
       }
       else {
         alert(res.data.msg)
@@ -33802,11 +33802,14 @@ if (localStorage.user){
 }
 
 function getExistingAuthData(domain){
-  let authData = JSON.parse(localStorage.authData);
+  let authData = JSON.parse(localStorage.artifacts);
   for (let i = 0; i < authData.length; i++){
-    if (authData[i].site_name === domain){
-        authData[i].username = encUtils.decryptMessage(authData[i].username);
-        authData[i].password = encUtils.decryptMessage(authData[i].password)
+    encUtils.decryptMessage(authData[i].force);
+    const decryptedDomain = encUtils.decryptMessage(authData[i].crystal);
+    if (decryptedDomain === domain){
+      authData[i].crystal = decryptedDomain;
+      authData[i].jedi = encUtils.decryptMessage(authData[i].jedi);
+      authData[i].sith = encUtils.decryptMessage(authData[i].sith);
       return authData[i];
     }
   }
@@ -33814,7 +33817,7 @@ function getExistingAuthData(domain){
 }
 function updateData(authData, existingData){
   if (confirm("Do you want to update credentials?")){
-    instance.post(`authentications/${existingData.site_id}/`, authData).then((resData) => {
+    instance.post(`artifacts/${existingData.holocron_id}/`, authData).then((resData) => {
       if (!resData.data.success){
         alert(resData.data.msg);
       }
@@ -33828,16 +33831,18 @@ function updateData(authData, existingData){
 
 function storeData(data) {
   const authData = {
-    site_name: data.site,
-    username: encUtils.encryptMessage(data.username),
-    password: encUtils.encryptMessage(data.password)
+    crystal: encUtils.encryptMessage(data.domain),
+    jedi: encUtils.encryptMessage(data.username),
+    sith: encUtils.encryptMessage(data.password)
   };
-  const existingData = getExistingAuthData(data.site);
-  if (existingData && (existingData.username !== data.username || existingData.password !== data.password)){
+  authData.force = encUtils.encryptMessage(data.domain + data.username + data.password);
+
+  const existingData = getExistingAuthData(data.domain);
+  if (existingData && (existingData.jedi !== data.username || existingData.sith !== data.password)){
     updateData(authData, existingData);
   }
   else if(!existingData) {
-    instance.post('authentications/', authData).then((resData) => {
+    instance.post('artifacts/', authData).then((resData) => {
       if (!resData.data.success) {
         alert(resData.data.msg);
       } else {
@@ -33856,27 +33861,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       const senderUrl = sender['origin'];
       console.log(senderUrl);
       console.log(message.data);
-      const authData = {site: senderUrl, username: data[0], password: data[1]};
+      const authData = {domain: senderUrl, username: data[0], password: data[1]};
       storeData(authData);
       sendResponse(true);
       break;
     case 'form_focus':
       const existingData = getExistingAuthData(message.domain);
       if (existingData){
-        sendResponse({found: true, username: existingData.username, password: existingData.password});
+        sendResponse({found: true, username: existingData.jedi, password: existingData.sith});
       }
       else {
         sendResponse({found: false, username:null, password: null});
       }
       break;
-    // case 'user-data':
-    //   console.log('user');
-    //   // localStorage.authData = JSON.stringify(message.authData);
-    //   // chrome.storage.local.set(message);
-    //   break;
-    // case 'user-data-clear':
-    //   chrome.storage.local.remove(['user', 'authData', 'encKeys']);
-    //   break;
     default:
       break;
   }
@@ -33884,15 +33881,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 
 },{"./enc-utils":232,"axios":194}],232:[function(require,module,exports){
-const sha256 = require("crypto-js/sha256");
 const hmacSHA256 = require("crypto-js/hmac-sha256");
 const aes = require("crypto-js/aes");
 const Base64 = require("crypto-js/enc-base64");
 const Utf8 = require("crypto-js/enc-utf8");
 
-const localStorageKey = 'keys';
 const  localStorageEncKey = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
-const cipherLength = 44;
+const tokenLength = 44;
 
 
 let encryptionKeys = ({
@@ -33901,7 +33896,6 @@ let encryptionKeys = ({
   authenticationKey: {id: 3, key: ''}
 });
 
-const stringForKey = (message, num) => `${message}${num}`;
 const encryptedMessage = (ciphertext, authToken) => `${ciphertext}${authToken}`;
 
 const hmac = (ciphertext, key) => {
@@ -33918,44 +33912,10 @@ const aesDecrypt = (ciphertext, key) => {
 };
 
 const getKeys = () => {
-  // // const encryptedKeys = localStorage.getItem(this.localStorageKey);
-  // let encKeys = null;
-  // chrome.storage.local.get(['encKeys'], (res) => {
-  //   encKeys = res.encKeys;
-  // });
-  // const decryptedText = aesDecrypt(encKeys, this.localStorageEncKey);
-  // return JSON.parse(decryptedText);
   let encKeys = localStorage["keys"];
   const decryptedText = aesDecrypt(encKeys, localStorageEncKey);
   return JSON.parse(decryptedText);
 };
-
-// const storeKeys = () => {
-//   const ciphertext = aesEncrypt(JSON.stringify(this.encryptionKeys), this.localStorageEncKey);
-//   // localStorage.setItem(this.localStorageKey, ciphertext);
-//   chrome.storage.local.set({encKeys: ciphertext});
-// };
-
-
-// export const deriveKeys = (masterKey: string) => {
-//   deriveKey(encryptionKeys.serverPassword, masterKey);
-//   deriveKey(encryptionKeys.encryptionKey, masterKey);
-//   deriveKey(encryptionKeys.authenticationKey, masterKey);
-//   storeKeys();
-// };
-//
-// const  deriveKey = (encKey: EncryptionKey, masterKey: string) => {
-//   encKey.key = (sha256(this.stringForKey(masterKey, encKey.id))).toString();
-// };
-
-const clearKeys = () => {
-  // localStorage.removeItem(this.localStorageKey);
-  chrome.storage.local.remove(['encKeys']);
-};
-
-// const getServerPassword(){
-//     return this.encryptionKeys.serverPassword.key;
-// }
 
 const  encryptMessage = (message) => {
   encryptionKeys = getKeys();
@@ -33966,8 +33926,8 @@ const  encryptMessage = (message) => {
 
 const  decryptMessage = (message) =>{
   encryptionKeys = getKeys();
-  const ciphertext = message.slice(0, cipherLength);
-  const token = message.slice(cipherLength);
+  const ciphertext = message.slice(0, message.length - tokenLength);
+  const token = message.slice(message.length - tokenLength);
   if (hmac(ciphertext, encryptionKeys.authenticationKey.key) !== token){
     throw new Error('Data has changed');
   }
@@ -33979,4 +33939,4 @@ module.exports = {
   decryptMessage
 };
 
-},{"crypto-js/aes":220,"crypto-js/enc-base64":223,"crypto-js/enc-utf8":224,"crypto-js/hmac-sha256":226,"crypto-js/sha256":230}]},{},[231]);
+},{"crypto-js/aes":220,"crypto-js/enc-base64":223,"crypto-js/enc-utf8":224,"crypto-js/hmac-sha256":226}]},{},[231]);

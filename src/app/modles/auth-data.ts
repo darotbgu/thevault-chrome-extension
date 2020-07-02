@@ -1,6 +1,7 @@
 export interface AuthData {
-  siteId: number;
-  siteName: string;
-  username: string;
-  password: string;
+  holocronId: number;
+  crystal: string;
+  jedi: string;
+  sith: string;
+  force: string;
 }
