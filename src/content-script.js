@@ -49,14 +49,16 @@ margin: 0.5em 0.2em;
 }
 `;
 
+console.log('content script injected');
 
+// adding autocomplete style to page
 let  head = document.head || document.getElementsByTagName('head')[0];
 let style = document.createElement('style');
 
 head.appendChild(style);
 style.appendChild(document.createTextNode(cssStyle));
 
-console.log('content script injected');
+// init autocomplete forms
 const formsCollection = document.forms;
 let autoCompleteUser = new Array(formsCollection.length);
 for (let j = 0; j < formsCollection.length; j++){
@@ -89,6 +91,7 @@ function addAutoComplete(formIndex){
       loginInputs--;
     }
   }
+  // making sure it is a login form
   if (loginInputs === 0 && passwordInput && usernameInput) {
 
     chrome.runtime.sendMessage({'name': 'form_focus', 'domain': location.origin}, (res) => {
@@ -139,6 +142,7 @@ function addAutocompleteAndSubmit(){
           loginInputsSubmit--;
         }
       }
+      // making sure this is a login form
       if (loginInputsSubmit === 0 && password && username) {
         const data = [username, password]
         chrome.runtime.sendMessage({'name': 'form_submit', 'data': data}, (res)=>{
@@ -157,6 +161,7 @@ addAutocompleteAndSubmit();
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   switch (message.name){
     case 'logout':
+      // clear autocomplete if logout occurred
       autoCompleteUser.forEach(autocomplete => {
         autocomplete.autocompleteInput.autocomplete.setVal();
         autocomplete.autocompleteInput.autocomplete.destroy();
@@ -165,6 +170,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       autoCompleteUser = [];
       break;
     case 'login':
+      // if login occurred after opening the tab
       addAutocompleteAndSubmit();
       break;
     default:
