@@ -44,6 +44,11 @@ export class LoginComponent implements OnInit {
     this.authenticationService.login(username, password).subscribe(
       data => {
           if (data.success){
+            chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+              tabs.forEach(tab => {
+                chrome.tabs.sendMessage(tab.id, {name: 'login'});
+              });
+            });
             this.router.navigate(['/']);
             this.submitted = false;
           }

@@ -63,8 +63,13 @@ export class HomeComponent implements OnInit {
     this.authenticationService.logout().subscribe(
       data => {
         // todo: clear extension data
-      this.router.navigate(['/login']);
-      this.loading = false;
+        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+          tabs.forEach(tab => {
+            chrome.tabs.sendMessage(tab.id, {name: 'logout'});
+          });
+        });
+        this.router.navigate(['/login']);
+        this.loading = false;
     },
       error => {this.loading = false; });
   }

@@ -7,8 +7,8 @@ const instance = axios.create({
   baseURL: 'http://127.0.0.1:8000/',
 });
 
-function getAuthDataFromServer(){
-  instance.get('artifacts/')
+async function getAuthDataFromServer(){
+  await instance.get('artifacts/')
     .then((res) => {
       if (res.data.success) {
         localStorage.artifacts =  JSON.stringify(res.data.data);
@@ -20,34 +20,46 @@ function getAuthDataFromServer(){
     .catch((err)=> alert(err));
 }
 
-if (localStorage.user){
-  const userData = JSON.parse(localStorage.user);
-  const authToken = userData.authToken;
-  instance.defaults.headers.common.Authorization = `Token ${authToken}`;
-  getAuthDataFromServer();
+function getAuthenticationToken() {
+  if (localStorage.user) {
+    const userData = JSON.parse(localStorage.user);
+    const authToken = userData.authToken;
+    instance.defaults.headers.common.Authorization = `Token ${authToken}`;
+    return true;
+  }
+  return false;
 }
 
-function getExistingAuthData(domain){
-  let authData = JSON.parse(localStorage.artifacts);
-  for (let i = 0; i < authData.length; i++){
-    encUtils.decryptMessage(authData[i].force);
-    const decryptedDomain = encUtils.decryptMessage(authData[i].crystal);
-    if (decryptedDomain === domain){
-      authData[i].crystal = decryptedDomain;
-      authData[i].jedi = encUtils.decryptMessage(authData[i].jedi);
-      authData[i].sith = encUtils.decryptMessage(authData[i].sith);
-      return authData[i];
-    }
-  }
-  return null;
+if (getAuthenticationToken()) {
+  getAuthDataFromServer().then(()=>{});
 }
-function updateData(authData, existingData){
+
+async function getExistingAuthData(domain){
+  if (getAuthenticationToken()) {
+    return await getAuthDataFromServer().then(()=> {
+      let authData = JSON.parse(localStorage.artifacts);
+      for (let i = 0; i < authData.length; i++) {
+        encUtils.decryptMessage(authData[i].force);
+        const decryptedDomain = encUtils.decryptMessage(authData[i].crystal);
+        if (decryptedDomain === domain) {
+          authData[i].crystal = decryptedDomain;
+          authData[i].jedi = encUtils.decryptMessage(authData[i].jedi);
+          authData[i].sith = encUtils.decryptMessage(authData[i].sith);
+          return authData[i];
+        }
+      }
+    });
+
+  }
+}
+async function updateData(authData, existingData){
   if (confirm("Do you want to update credentials?")){
     instance.post(`artifacts/${existingData.holocron_id}/`, authData).then((resData) => {
       if (!resData.data.success){
         alert(resData.data.msg);
       }
       else {
+        getAuthenticationToken();
         getAuthDataFromServer();
       }
     }).catch((err) => alert(err));
@@ -55,7 +67,7 @@ function updateData(authData, existingData){
   console.log("Not updating");
 }
 
-function storeData(data) {
+async function storeData(data) {
   const authData = {
     crystal: encUtils.encryptMessage(data.domain),
     jedi: encUtils.encryptMessage(data.username),
@@ -63,45 +75,51 @@ function storeData(data) {
   };
   authData.force = encUtils.encryptMessage(data.domain + data.username + data.password);
 
-  const existingData = getExistingAuthData(data.domain);
-  if (existingData && (existingData.jedi !== data.username || existingData.sith !== data.password)){
-    updateData(authData, existingData);
+  await getExistingAuthData(data.domain).then(existingData => {
+    if (existingData && (existingData.jedi !== data.username || existingData.sith !== data.password)){
+      updateData(authData, existingData);
+    }
+    else if(!existingData) {
+      instance.post('artifacts/', authData).then((resData) => {
+        if (!resData.data.success) {
+          alert(resData.data.msg);
+        } else {
+          getAuthenticationToken();
+          getAuthDataFromServer();
+        }
+      }).catch((err) => alert(err));
+    }
+  });
+
+}
+
+async function listener(message, sender, sendResponse){
+  console.log('listening');
+  console.log(message);
+  if (message.name === 'form_submit') {
+    const data = message.data;
+    const senderUrl = sender['origin'];
+    console.log(senderUrl);
+    console.log(message.data);
+    const authData = {domain: senderUrl, username: data[0], password: data[1]};
+    return await storeData(authData).then(() => {
+      sendResponse(true);
+    });
   }
-  else if(!existingData) {
-    instance.post('artifacts/', authData).then((resData) => {
-      if (!resData.data.success) {
-        alert(resData.data.msg);
+  if(message.name ===  'form_focus') {
+    return await getExistingAuthData(message.domain).then((existingData) => {
+      if (existingData) {
+        sendResponse({found: true, username: existingData.jedi, password: existingData.sith});
       } else {
-        getAuthDataFromServer();
+        sendResponse({found: false, username:null, password: null});
+
       }
-    }).catch((err) => alert(err));
+    });
   }
 }
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log('listening');
-  console.log(message);
-  switch (message.name) {
-    case 'form_submit':
-      const data = message.data;
-      const senderUrl = sender['origin'];
-      console.log(senderUrl);
-      console.log(message.data);
-      const authData = {domain: senderUrl, username: data[0], password: data[1]};
-      storeData(authData);
-      sendResponse(true);
-      break;
-    case 'form_focus':
-      const existingData = getExistingAuthData(message.domain);
-      if (existingData){
-        sendResponse({found: true, username: existingData.jedi, password: existingData.sith});
-      }
-      else {
-        sendResponse({found: false, username:null, password: null});
-      }
-      break;
-    default:
-      break;
-  }
+chrome.runtime.onMessage.addListener((message,sender, sendResponse) => {
+  listener(message, sender,sendResponse);
+  return true;
 });
 

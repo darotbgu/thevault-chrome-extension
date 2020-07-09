@@ -50,7 +50,7 @@ for (let j = 0; j < formsCollection.length; j++){
 
 function addAutoComplete(formIndex){
   if (autoCompleteUser[formIndex] != null){
-    autoCompleteUser.destroy();
+    autoCompleteUser[formIndex].autocompleteInput.autocomplete.destroy();
   }
 
   console.log('focus activated');
@@ -78,7 +78,7 @@ function addAutoComplete(formIndex){
 
     chrome.runtime.sendMessage({'name': 'form_focus', 'domain': location.origin}, (res) => {
       if (res.found) {
-        autoCompleteUser[formIndex] = autocomplete(".autocomplete",
+        let autocompleteInput = autocomplete(".autocomplete",
           {minLength: 0, openOnFocus: true},
           [{
             source: (query, callback) => {
@@ -96,44 +96,63 @@ function addAutoComplete(formIndex){
           .on('autocomplete:selected', (event, suggestion, dataset, context) => {
             passwordInput.value = res.password;
           });
-
+        autoCompleteUser[formIndex] = {autocompleteInput, passwordInput};
       }
     });
   }
 
 }
-
-
-for (let i = 0; i < formsCollection.length; i++){
-  addAutoComplete(i);
-  formsCollection.item(i).addEventListener('submit', function() {
-    console.log('submit activated');
-    const currForm = this;
-    let password = '';
-    let username = '';
-    const inputs = currForm.getElementsByTagName('input');
-    let loginInputsSubmit = 2;
-    for (let j = 0; j < inputs.length; j++) {
-      const input = inputs[j];
-      if (input.type === 'password' && !input.hidden) {
-        console.log('found password');
-        password = input.value;
-        loginInputsSubmit--;
-      } else if (input.type === 'text' && !input.hidden && !input.classList.contains("aa-hint")) {
-        console.log('found username');
-        username = input.value;
-        loginInputsSubmit--;
-      }
-    }
-    if (loginInputsSubmit === 0 && password && username) {
-      const data = [username, password]
-      chrome.runtime.sendMessage({'name': 'form_submit', 'data': data}, (res)=>{
-        if (res) {
-          addAutoComplete(i);
+function addAutocompleteAndSubmit(){
+  for (let i = 0; i < formsCollection.length; i++){
+    addAutoComplete(i);
+    formsCollection.item(i).addEventListener('submit', function() {
+      console.log('submit activated');
+      const currForm = this;
+      let password = '';
+      let username = '';
+      const inputs = currForm.getElementsByTagName('input');
+      let loginInputsSubmit = 2;
+      for (let j = 0; j < inputs.length; j++) {
+        const input = inputs[j];
+        if (input.type === 'password' && !input.hidden) {
+          console.log('found password');
+          password = input.value;
+          loginInputsSubmit--;
+        } else if (input.type === 'text' && !input.hidden && !input.classList.contains("aa-hint")) {
+          console.log('found username');
+          username = input.value;
+          loginInputsSubmit--;
         }
-      });
-    }
+      }
+      if (loginInputsSubmit === 0 && password && username) {
+        const data = [username, password]
+        chrome.runtime.sendMessage({'name': 'form_submit', 'data': data}, (res)=>{
+          if (res) {
+            addAutoComplete(i);
+          }
+        });
+      }
 
-
-  });
+    });
+  }
 }
+
+addAutocompleteAndSubmit();
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  switch (message.name){
+    case 'logout':
+      autoCompleteUser.forEach(autocomplete => {
+        autocomplete.autocompleteInput.autocomplete.setVal();
+        autocomplete.autocompleteInput.autocomplete.destroy();
+        autocomplete.passwordInput.value = '';
+      });
+      autoCompleteUser = [];
+      break;
+    case 'login':
+      addAutocompleteAndSubmit();
+      break;
+    default:
+      break;
+  }
+});
