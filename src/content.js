@@ -3857,6 +3857,10 @@ let cssStyle = `
 .algolia-autocomplete {
   width: 100%;
 }
+.aa-input{
+  margin-top: 0;
+  margin-bottom: 0;
+}
 .algolia-autocomplete .aa-input, .algolia-autocomplete .aa-hint {
   width: 100%;
 }
@@ -3865,16 +3869,25 @@ let cssStyle = `
 }
 .algolia-autocomplete .aa-dropdown-menu {
   width: 100%;
-  background-color: #fff;
-  border: 1px solid #999;
-  border-top: none;
+  // background-color: #fff;
+  color: #fff;
+  background-color: #1864a6;
+  // border: 1px solid #999;
+  border: 1px solid #fff;
+  // border-top: none;
+  border-radius: 15px;
 }
 .algolia-autocomplete .aa-dropdown-menu .aa-suggestion {
   cursor: pointer;
   padding: 5px 4px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 16 px;
+  line-height: 1.5em;
 }
 .algolia-autocomplete .aa-dropdown-menu .aa-suggestion.aa-cursor {
   background-color: #B2D7FF;
+  border-radius: 15px;
 }
 .algolia-autocomplete .aa-dropdown-menu .aa-suggestion em {
   font-weight: bold;
@@ -3892,7 +3905,12 @@ margin: 0.5em 0.2em;
 }
 `;
 
-// document.body.style.cssText += cssStyle;
+
+let  head = document.head || document.getElementsByTagName('head')[0];
+let style = document.createElement('style');
+
+head.appendChild(style);
+style.appendChild(document.createTextNode(cssStyle));
 
 console.log('content script injected');
 const formsCollection = document.forms;
