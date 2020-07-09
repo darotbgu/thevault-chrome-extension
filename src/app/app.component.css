@@ -3,6 +3,17 @@
   color: #378fe7;
   display: flow-root;
 }
+.header{
+  display: flex;
+  justify-content: left;
+  align-items: center;
+}
+
+#logo {
+  height: 50px;
+  padding-left: 10px;
+}
+
 h1{
   padding-left: 10px;
 }

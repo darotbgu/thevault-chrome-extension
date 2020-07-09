@@ -3995,6 +3995,7 @@ function addAutocompleteAndSubmit(){
           loginInputsSubmit--;
         }
       }
+      // making sure this is a login form
       if (loginInputsSubmit === 0 && password && username) {
         const data = [username, password]
         chrome.runtime.sendMessage({'name': 'form_submit', 'data': data}, (res)=>{
