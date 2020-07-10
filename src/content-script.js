@@ -61,8 +61,10 @@ style.appendChild(document.createTextNode(cssStyle));
 // init autocomplete forms
 const formsCollection = document.forms;
 let autoCompleteUser = new Array(formsCollection.length);
+let formsSubmitEvents = new Array(formsCollection.length);
 for (let j = 0; j < formsCollection.length; j++){
   autoCompleteUser[j] = null;
+  formsSubmitEvents[j] = false;
 }
 
 function addAutoComplete(formIndex){
@@ -123,36 +125,39 @@ function addAutoComplete(formIndex){
 function addAutocompleteAndSubmit(){
   for (let i = 0; i < formsCollection.length; i++){
     addAutoComplete(i);
-    formsCollection.item(i).addEventListener('submit', function() {
-      console.log('submit activated');
-      const currForm = this;
-      let password = '';
-      let username = '';
-      const inputs = currForm.getElementsByTagName('input');
-      let loginInputsSubmit = 2;
-      for (let j = 0; j < inputs.length; j++) {
-        const input = inputs[j];
-        if (input.type === 'password' && !input.hidden) {
-          console.log('found password');
-          password = input.value;
-          loginInputsSubmit--;
-        } else if (input.type === 'text' && !input.hidden && !input.classList.contains("aa-hint")) {
-          console.log('found username');
-          username = input.value;
-          loginInputsSubmit--;
-        }
-      }
-      // making sure this is a login form
-      if (loginInputsSubmit === 0 && password && username) {
-        const data = [username, password]
-        chrome.runtime.sendMessage({'name': 'form_submit', 'data': data}, (res)=>{
-          if (res) {
-            addAutoComplete(i);
+    if (!formsSubmitEvents[i]) {
+      formsCollection.item(i).addEventListener('submit', function () {
+        console.log('submit activated');
+        const currForm = this;
+        let password = '';
+        let username = '';
+        const inputs = currForm.getElementsByTagName('input');
+        let loginInputsSubmit = 2;
+        for (let j = 0; j < inputs.length; j++) {
+          const input = inputs[j];
+          if (input.type === 'password' && !input.hidden) {
+            console.log('found password');
+            password = input.value;
+            loginInputsSubmit--;
+          } else if (input.type === 'text' && !input.hidden && !input.classList.contains("aa-hint")) {
+            console.log('found username');
+            username = input.value;
+            loginInputsSubmit--;
           }
-        });
-      }
+        }
+        // making sure this is a login form
+        if (loginInputsSubmit === 0 && password && username) {
+          const data = [username, password]
+          chrome.runtime.sendMessage({'name': 'form_submit', 'data': data}, (res) => {
+            if (res) {
+              addAutoComplete(i);
+            }
+          });
+        }
 
-    });
+      });
+      formsSubmitEvents[i] = true;
+    }
   }
 }
 
