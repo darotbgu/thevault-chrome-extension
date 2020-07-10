@@ -29,6 +29,12 @@
       <div *ngIf="registerForm.controls.password.errors.minlength">
         Password must be at least 8 characters long.
       </div>
+      <div *ngIf="registerForm.controls.password.errors.maxLength">
+        Password must be no more than 32 characters long.
+      </div>
+      <div *ngIf="registerForm.controls.password.errors.pattern">
+        Password must contain: number, lowercase letter, uppercase letter and special character.
+      </div>
     </div>
   </div>
   <div class="group-buttons">

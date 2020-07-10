@@ -23,7 +23,16 @@ export class RegisterComponent implements OnInit {
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
       username: ['', Validators.required],
-      password: ['', Validators.compose([Validators.required, Validators.minLength(8)])]
+      password: ['', Validators.compose([
+        Validators.required,
+        Validators.minLength(8),
+        Validators.maxLength(32),
+        // password has number, upper and lower case letters, special characters
+        Validators.pattern('^(?=[^A-Z]*[A-Z])(?=[^a-z]*[a-z])' +
+          '(?=\\D*\\d)' +
+          '(?=[^!"#$%&\'()*+,-.\\/:;<=>?@[\\]^_`{|}~]*[!"#$%&\'()*+,-.\\/:;<=>?@[\\]^_`{|}~])' +
+          '[A-Za-z\\d!"#$%&\'()*+,-.\\/:;<=>?@[\\]^_`{|}~].*$')
+      ])]
     });
   }
 
