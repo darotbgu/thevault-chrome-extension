@@ -84,7 +84,9 @@ function addAutoComplete(formIndex){
       console.log('found password');
       passwordInput = input;
       loginInputs--;
-    } else if (input.type === 'text' && !input.hidden && !input.classList.contains("aa-hint")) {
+    }
+    // autocomplete adds another input field
+    else if (input.type === 'text' && !input.hidden && !input.classList.contains("aa-hint")) {
       console.log('found username');
       usernameInput = input;
       if (usernameInput.className.indexOf("autocomplete") < 0) {
@@ -96,7 +98,7 @@ function addAutoComplete(formIndex){
   // making sure it is a login form
   if (loginInputs === 0 && passwordInput && usernameInput) {
 
-    chrome.runtime.sendMessage({'name': 'form_focus', 'domain': location.origin}, (res) => {
+    chrome.runtime.sendMessage({'name': 'form_autofill', 'domain': location.origin}, (res) => {
       if (res.found) {
         let autocompleteInput = autocomplete(".autocomplete",
           {minLength: 0, openOnFocus: true},
@@ -139,7 +141,9 @@ function addAutocompleteAndSubmit(){
             console.log('found password');
             password = input.value;
             loginInputsSubmit--;
-          } else if (input.type === 'text' && !input.hidden && !input.classList.contains("aa-hint")) {
+          }
+          // autocomplete adds another input field
+          else if (input.type === 'text' && !input.hidden && !input.classList.contains("aa-hint")) {
             console.log('found username');
             username = input.value;
             loginInputsSubmit--;
@@ -168,9 +172,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     case 'logout':
       // clear autocomplete if logout occurred
       autoCompleteUser.forEach(autocomplete => {
-        autocomplete.autocompleteInput.autocomplete.setVal();
-        autocomplete.autocompleteInput.autocomplete.destroy();
-        autocomplete.passwordInput.value = '';
+        if (autocomplete !== null) {
+          autocomplete.autocompleteInput.autocomplete.setVal();
+          autocomplete.autocompleteInput.autocomplete.destroy();
+          autocomplete.passwordInput.value = '';
+        }
       });
       autoCompleteUser = [];
       break;

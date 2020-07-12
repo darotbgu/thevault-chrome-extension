@@ -33880,7 +33880,7 @@ async function listener(message, sender, sendResponse){
       sendResponse(true);
     });
   }
-  if(message.name ===  'form_focus') {
+  if(message.name ===  'form_autofill') {
     return await getExistingAuthData(message.domain).then((existingData) => {
       if (existingData) {
         sendResponse({found: true, username: existingData.jedi, password: existingData.sith});
