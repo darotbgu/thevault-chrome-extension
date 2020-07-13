@@ -30,26 +30,22 @@ function getAuthenticationToken() {
   return false;
 }
 
-if (getAuthenticationToken()) {
-  getAuthDataFromServer().then(()=>{});
-}
-
 async function getExistingAuthData(domain){
-  if (getAuthenticationToken()) {
-    return await getAuthDataFromServer().then(()=> {
-      let authData = JSON.parse(localStorage.artifacts);
-      for (let i = 0; i < authData.length; i++) {
-        encUtils.decryptMessage(authData[i].force);
-        const decryptedDomain = encUtils.decryptMessage(authData[i].crystal);
-        if (decryptedDomain === domain) {
-          authData[i].crystal = decryptedDomain;
-          authData[i].jedi = encUtils.decryptMessage(authData[i].jedi);
-          authData[i].sith = encUtils.decryptMessage(authData[i].sith);
-          return authData[i];
-        }
+  let authData = JSON.parse(localStorage.artifacts);
+  for (let i = 0; i < authData.length; i++) {
+    try {
+      encUtils.decryptMessage(authData[i].force);
+      const decryptedDomain = encUtils.decryptMessage(authData[i].crystal);
+      if (decryptedDomain === domain) {
+        authData[i].crystal = decryptedDomain;
+        authData[i].jedi = encUtils.decryptMessage(authData[i].jedi);
+        authData[i].sith = encUtils.decryptMessage(authData[i].sith);
+        return authData[i];
       }
-    });
-
+    }
+    catch (e) {
+      alert(e.message);
+    }
   }
 }
 async function updateData(authData, existingData){
@@ -59,7 +55,6 @@ async function updateData(authData, existingData){
         alert(resData.data.msg);
       }
       else {
-        getAuthenticationToken();
         getAuthDataFromServer();
       }
     }).catch((err) => alert(err));
@@ -84,37 +79,37 @@ async function storeData(data) {
         if (!resData.data.success) {
           alert(resData.data.msg);
         } else {
-          getAuthenticationToken();
           getAuthDataFromServer();
         }
       }).catch((err) => alert(err));
     }
   });
-
 }
 
 async function listener(message, sender, sendResponse){
   console.log('listening');
   console.log(message);
-  if (message.name === 'form_submit') {
-    const data = message.data;
-    const senderUrl = sender['origin'];
-    console.log(senderUrl);
-    console.log(message.data);
-    const authData = {domain: senderUrl, username: data[0], password: data[1]};
-    return await storeData(authData).then(() => {
-      sendResponse(true);
-    });
-  }
-  if(message.name ===  'form_autofill') {
-    return await getExistingAuthData(message.domain).then((existingData) => {
-      if (existingData) {
-        sendResponse({found: true, username: existingData.jedi, password: existingData.sith});
-      } else {
-        sendResponse({found: false, username:null, password: null});
-
-      }
-    });
+  // if get authentication token fails user is not logged in
+  if (getAuthenticationToken()) {
+    if (message.name === 'form_submit') {
+      const data = message.data;
+      const senderUrl = sender['origin'];
+      console.log(senderUrl);
+      console.log(message.data);
+      const authData = {domain: senderUrl, username: data[0], password: data[1]};
+      return await storeData(authData).then(() => {
+        sendResponse(true);
+      });
+    }
+    if (message.name === 'form_autofill') {
+      return await getExistingAuthData(message.domain).then((existingData) => {
+        if (existingData) {
+          sendResponse({found: true, username: existingData.jedi, password: existingData.sith});
+        } else {
+          sendResponse({found: false, username: null, password: null});
+        }
+      });
+    }
   }
 }
 
