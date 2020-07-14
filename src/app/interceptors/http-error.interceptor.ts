@@ -24,10 +24,10 @@ export class HttpErrorInterceptor implements HttpInterceptor {
             errorMessage = `Error: ${error.error.message}`;
           } else {
             // server-side error
-            errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
+            errorMessage = error.error.msg ? error.error.msg : `Error Code: ${error.status}\r\nMessage: ${error.message}`;
           }
           this.loaderService.hide();
-          this.messageService.add({key: 'message', severity: 'error', summary: 'Error Message', detail: error.message});
+          this.messageService.add({key: 'message', severity: 'error', summary: 'Error Message', detail: errorMessage});
           return throwError(errorMessage);
         })
       );
